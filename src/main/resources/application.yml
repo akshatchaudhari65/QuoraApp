@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: QuoraApp
+  data:
+    mongodb:
+      auto-index-creation: true
+
+  mongodb:
+    database: quora_db
+    port: 27017
+    host: localhost
