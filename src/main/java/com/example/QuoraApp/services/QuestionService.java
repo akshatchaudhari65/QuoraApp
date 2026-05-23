@@ -5,8 +5,12 @@ import com.example.QuoraApp.dto.QuestionResponseDTO;
 import com.example.QuoraApp.mapper.QuestionMapper;
 import com.example.QuoraApp.models.Question;
 import com.example.QuoraApp.repositories.QuestionRepository;
+import com.example.QuoraApp.utils.CursorUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -31,5 +35,31 @@ public class QuestionService implements IQuestionService {
                 .map(QuestionMapper::toQuestionResponseDTO)
                 .doOnSuccess(response -> System.out.println("Question created successfully"))
                 .doOnError(error -> System.out.println("Error creating question: " + error));
+    }
+
+    @Override
+    public Flux<QuestionResponseDTO> searchQuestions(String searchTerm, int offset, int page) {
+        return questionRepository.findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset, page))
+                .map(QuestionMapper::toQuestionResponseDTO)
+                .doOnComplete(() -> System.out.println("Question created successfully"))
+                .doOnError(error -> System.out.println("Error creating question: " + error));
+    }
+
+    @Override
+    public Flux<QuestionResponseDTO> getAllQuestions(String cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+        if(!CursorUtils.isValidCursor(cursor)){
+            return questionRepository.findTop10ByOrderByCreatedAtAsc()
+                    .take(size)
+                    .map(QuestionMapper::toQuestionResponseDTO)
+                    .doOnComplete(() -> System.out.println("Question created successfully"))
+                    .doOnError(error -> System.out.println("Error creating question: " + error));
+        } else{
+            LocalDateTime cursorTimeStamp = CursorUtils.parseCursor(cursor);
+            return questionRepository.findByCreatedAtGreaterThanOrderByCreatedAtAsc(cursorTimeStamp, pageable)
+                    .map(QuestionMapper::toQuestionResponseDTO)
+                    .doOnComplete(() -> System.out.println("Question created successfully"))
+                    .doOnError(error -> System.out.println("Error creating question: " + error));
+        }
     }
 }
