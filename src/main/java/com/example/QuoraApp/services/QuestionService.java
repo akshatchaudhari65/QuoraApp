@@ -62,4 +62,12 @@ public class QuestionService implements IQuestionService {
                     .doOnError(error -> System.out.println("Error creating question: " + error));
         }
     }
+
+    @Override
+    public Mono<QuestionResponseDTO> getQuestionById(String id) {
+        return questionRepository.findById(id)
+                .map(QuestionMapper::toQuestionResponseDTO)
+                .doOnError(error -> System.out.println("Error fetching question by id: " + error))
+                .doOnSuccess(response -> System.out.println("Fetched question by id successfully" + response));
+    }
 }
