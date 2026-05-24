@@ -22,6 +22,13 @@ public class QuestionController {
         .doOnError(error -> System.out.println("Error creating question: " + error));
     }
 
+    @GetMapping("/{id}")
+    public Mono<QuestionResponseDTO> getQuestionById(@PathVariable String id) {
+        return questionService.getQuestionById(id)
+                .doOnError(error -> System.out.println("Error fetching question: " + error))
+                .doOnSuccess(response -> System.out.println("Question fetched successfully: " + response));
+    }
+
     @GetMapping
     public Flux<QuestionResponseDTO> getAllQuestions(
             @RequestParam(required = false) String cursor,
